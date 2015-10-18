@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="card_yellow">#FCF0AD</color>
+    <color name="card_aquatic">#FCF0AD</color>
+    <color name="card_classic">#BAB7A9</color>
+    <color name="card_sunbrite">#F9D6AC</color>
+    <color name="card_tropical">#56C4E8</color>
+    <color name="window_background">#FFFFFF</color>
+    <color name="my_primary">#607D8B</color>
+    <color name="my_primary_dark">#607D8B</color>
+
+    <color name="my_primary_light">#CFD8DC</color>
+    <color name="my_accent">#03A9F4</color>
+    <color name="my_primary_text">#212121</color>
+    <color name="my_secondary_text">#727272</color>
+    <color name="my_icons">#FFFFFF</color>
+    <color name="my_divider">#B6B6B6</color>
+</resources>
