@@ -302,6 +302,7 @@ public class LocationActivity extends AppCompatActivity {
     public void onButtonRemoveClicked(View v) {
         SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
         app.locationAdapter.remove(currentLocation);
+        app.locationAdapter.notifyDataSetChanged();
         saveLocations();
         finish();
     }

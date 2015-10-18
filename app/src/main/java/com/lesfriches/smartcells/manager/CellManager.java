@@ -234,10 +234,9 @@ public class CellManager {
         lMatchReturned.commonFootPrint = commonFootprint;
 
         // Common footprint contains X% of current location cells
-        if (totalFootprint2Count != 0) {
+        if (computedFootprint2.computedTowerInfos.size() != 0 && commonFootprint.computedTowerInfos.size() != 0) {
             float a = commonFootprint.computedTowerInfos.size();
             float b = computedFootprint2.computedTowerInfos.size();
-            Log.i("CellManager", "footprintcommon => " + a + " , " + b);
             lMatchReturned.currentCommonLocationsPercent = (int) (a / b * 100);
         }
 

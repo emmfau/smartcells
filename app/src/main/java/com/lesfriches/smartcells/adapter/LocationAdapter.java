@@ -45,9 +45,12 @@ public class LocationAdapter extends ArrayAdapter<Location> {
         }
         bt.setText(locationText);
 
+        ImageView iv = (ImageView) convertView.findViewById(R.id.locationMatch);
         if (location.locationMatch.currentMatchPercent > 80 && location.locationMatch.currentCommonLocationsPercent > 60) {
-            ImageView iv = (ImageView) convertView.findViewById(R.id.locationMatch);
             iv.setVisibility(View.VISIBLE);
+        }
+        else {
+            iv.setVisibility(View.INVISIBLE);
         }
 
         return convertView;
