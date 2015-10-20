@@ -3,6 +3,7 @@ package com.lesfriches.smartcells;
 import android.app.Application;
 
 import com.lesfriches.smartcells.adapter.LocationAdapter;
+import com.lesfriches.smartcells.manager.ActionManager;
 import com.lesfriches.smartcells.manager.CellManager;
 import com.lesfriches.smartcells.manager.PersistenceManager;
 import com.lesfriches.smartcells.model.FootPrint;
@@ -36,5 +37,6 @@ public class SmartCellsApplication extends Application {
     // Global managers
     public CellManager cellManager = new CellManager(this);
     public PersistenceManager persistenceManager = new PersistenceManager(this);
+    public ActionManager actionManager = new ActionManager(this);
 
 }

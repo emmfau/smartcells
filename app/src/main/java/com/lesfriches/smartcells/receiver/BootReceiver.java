@@ -16,7 +16,7 @@ public class BootReceiver extends BroadcastReceiver {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             SmartCellsApplication app = ((SmartCellsApplication) context.getApplicationContext());
             if (!app.alarmSetted) {
-                app.alarmReceiver.setAlarm(context);
+                app.alarmReceiver.setAlarm(app);
             }
         }
     }

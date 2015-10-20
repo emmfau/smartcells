@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.database.MatrixCursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.hookedonplay.decoviewlib.DecoView;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
@@ -30,9 +32,11 @@ import com.lesfriches.smartcells.SmartCellsApplication;
 import com.lesfriches.smartcells.model.ComputedTowerInfo;
 import com.lesfriches.smartcells.model.FootPrint;
 import com.lesfriches.smartcells.model.Location;
+import com.lesfriches.smartcells.model.Measure;
 import com.lesfriches.smartcells.service.SchedulingService;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -46,6 +50,10 @@ public class LocationActivity extends AppCompatActivity {
     // Receiver for service events ( when a new measure is collected and the global footprint is updated )
     private BroadcastReceiver updateUIReceiver;
 
+    Handler mHandler;
+    int handlerCount=0;
+
+    LinkedList<Measure> measures = new LinkedList<Measure>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,25 +86,21 @@ public class LocationActivity extends AppCompatActivity {
             etLocationName.setText(currentLocation.name);
         }
 
-        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+        mHandler = new Handler();
         if (currentLocation.isLearning) {
-            showLearningMode();
-            enableMeasureReception();
-        } else {
-            hideLearningMode();
+            Button btLearnLocation=(Button)findViewById(R.id.btLearnLocation);
+            btLearnLocation.setText("STOP (" + (60-handlerCount) +")");
         }
 
         if (currentLocation.footprint != null) {
             drawLocationFootprint();
         }
 
-
         if (currentLocation.enableBluetooth) {
             showBluetoothEnabled();
         } else {
             showBluetoothDisabled();
         }
-
 
         if (currentLocation.enableWifi) {
             showWifiEnabled();
@@ -107,15 +111,12 @@ public class LocationActivity extends AppCompatActivity {
         SeekBar sbVolumeLevel = (SeekBar) findViewById(R.id.volumeLevel);
         sbVolumeLevel.setProgress(currentLocation.volumeLevel);
         sbVolumeLevel.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
             }
 
             @Override
@@ -129,68 +130,23 @@ public class LocationActivity extends AppCompatActivity {
 
 
     private void showAnalysis() {
-
         SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
-
-        // Définition des colonnes
-        // NB : SimpleCursorAdapter a besoin obligatoirement d'un ID nommé "_id"
+        // Column definition : SimpleCursorAdapter needs ID named "_id"
         String[] columns = new String[]{"_id", "col1", "col2"};
 
-        // Définition des données du tableau
-        // les lignes ci-dessous ont pour seul but de simuler
-        // un objet de type Cursor pour le passer au SimpleCursorAdapter.
-        // Si vos données sont issues d'une base SQLite,
-        // utilisez votre "cursor" au lieu du "matrixCursor"
         MatrixCursor matrixCursor = new MatrixCursor(columns);
         startManagingCursor(matrixCursor);
-        // Titres
-
         matrixCursor.addRow(new Object[]{1, "Global footprint\n[id,psc]=[count,avg]", "Location footprint\n[id,psc]=[count,avg]"});
-        // Contenus
-
         matrixCursor.addRow(new Object[]{2, app.currentFootprint.toString(), currentLocation.toString()});
-
         matrixCursor.addRow(new Object[]{3, "Common footprint", "Result"});
-
         matrixCursor.addRow(new Object[]{4, currentLocation.locationMatch.commonFootPrint.toString(), "C-" + currentLocation.locationMatch.currentCommonLocationsPercent + "% M-" + currentLocation.locationMatch.currentMatchPercent + "%"});
 
-        // on prendra les données des colonnes 1 et 2...
         String[] from = new String[]{"col1", "col2"};
-
-        // ...pour les placer dans les TextView définis dans "row_item.xml"
         int[] to = new int[]{R.id.textViewCol1, R.id.textViewCol2};
-
-        // création de l'objet SimpleCursorAdapter...
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.table_item_footprint, matrixCursor, from, to, 0);
-
-        // ...qui va remplir l'objet ListView
         ListView lv = (ListView) findViewById(R.id.lv);
         lv.setAdapter(adapter);
     }
-
-
-    private void showLearningMode() {
-        Animation mAnimation = new AlphaAnimation(1, 0);
-        mAnimation.setDuration(500);
-        mAnimation.setInterpolator(new LinearInterpolator());
-        mAnimation.setRepeatCount(Animation.INFINITE);
-        mAnimation.setRepeatMode(Animation.REVERSE);
-        ImageView imageView = (ImageView) findViewById(R.id.imageView);
-        imageView.setVisibility(View.VISIBLE);
-        imageView.startAnimation(mAnimation);
-        Button btResetLocation = (Button) findViewById(R.id.btLearnLocation);
-        btResetLocation.setText("Stop learning");
-
-    }
-
-    private void hideLearningMode() {
-        ImageView imageView = (ImageView) findViewById(R.id.imageView);
-        imageView.setVisibility(View.VISIBLE);
-        imageView.clearAnimation();
-        Button btResetLocation = (Button) findViewById(R.id.btLearnLocation);
-        btResetLocation.setText("Start learning");
-    }
-
 
     private void showBluetoothEnabled() {
         Switch sw = (Switch) findViewById(R.id.switchBluetooth);
@@ -243,61 +199,54 @@ public class LocationActivity extends AppCompatActivity {
         decoView.deleteAll();
     }
 
-    private void enableMeasureReception() {
-        // Register service events to update UI
-        // http://stackoverflow.com/questions/14695537/android-update-activity-ui-from-service
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(SchedulingService.class.getCanonicalName());
-        updateUIReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (currentLocation.timestampStartLearning != -1) {
+
+    private Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (currentLocation.isLearning) {
+                handlerCount++;
+                if (handlerCount > 0 && handlerCount < 60) {
+                    Log.i("LocationActivity", "Create measure " + handlerCount);
+                    Button btLearnLocation = (Button) findViewById(R.id.btLearnLocation);
+                    btLearnLocation.setText("STOP (" + (60 - handlerCount) + ")");
                     SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
-                    currentLocation.footprint = app.cellManager.createFootPrint(app.measures, currentLocation.timestampStartLearning, System.currentTimeMillis());
+                    measures.add(app.cellManager.createMeasure());
+                    mHandler.postDelayed(mRunnable, 1000);
+                } else if (handlerCount >= 60) {
+                    Log.i("LocationActivity", "Create location footprint");
+                    Button btLearnLocation = (Button) findViewById(R.id.btLearnLocation);
+                    btLearnLocation.setText("LEARN");
+                    SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
+                    currentLocation.footprint = app.cellManager.createFootPrint(measures);
+                    Toast.makeText(app, "Footprint created !", Toast.LENGTH_SHORT).show();
+                    currentLocation.isLearning = false;
                     drawLocationFootprint();
+                    showAnalysis();
                 }
             }
-        };
-        registerReceiver(updateUIReceiver, filter);
-    }
-
-    private void disableMeasureReception() {
-        try {
-            if (updateUIReceiver != null) {
-                unregisterReceiver(updateUIReceiver);
-            }
-        } catch (Exception e) {
-            // If receiver already unregistered anywhere else, do nothing
-            Log.w(LocationActivity.class.getName(), "SchedulingService receiver already unregistered anywhere else, ignoring.");
         }
-
-    }
-
+    };
 
     public void onButtonLearnClicked(View v) {
         // if entering learn mode
         if (!currentLocation.isLearning) {
             currentLocation.isLearning = true;
-            showLearningMode();
-            currentLocation.timestampStartLearning = System.currentTimeMillis();
-            SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
-            currentLocation.footprint = app.cellManager.createFootPrint(app.measures, currentLocation.timestampStartLearning, System.currentTimeMillis());
-            enableMeasureReception();
-            drawLocationFootprint();
+            Toast.makeText(this, "Learn location for 60 seconds", Toast.LENGTH_SHORT).show();
+            handlerCount = 0;
+            measures = new LinkedList<Measure>();
+
+            mHandler.postDelayed(mRunnable, 1000);
         }
         // if exiting learn mode
         else {
             currentLocation.isLearning = false;
-            hideLearningMode();
-            currentLocation.timestampEndLearning = System.currentTimeMillis();
-            SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
-            currentLocation.footprint = app.cellManager.createFootPrint(app.measures, currentLocation.timestampStartLearning, currentLocation.timestampEndLearning);
-            disableMeasureReception();
-            drawLocationFootprint();
-
+            handlerCount = 0;
+            measures = new LinkedList<Measure>();
+            Button btLearnLocation=(Button)findViewById(R.id.btLearnLocation);
+            btLearnLocation.setText("LEARN");
         }
-    }
 
+    }
 
     public void onButtonRemoveClicked(View v) {
         SmartCellsApplication app = ((SmartCellsApplication) getApplicationContext());
@@ -305,6 +254,16 @@ public class LocationActivity extends AppCompatActivity {
         app.locationAdapter.notifyDataSetChanged();
         saveLocations();
         finish();
+    }
+
+    public void onButtonDetailsClicked(View v) {
+        ListView lv=(ListView)findViewById(R.id.lv);
+        if (lv.getVisibility()==View.VISIBLE) {
+            lv.setVisibility(View.INVISIBLE);
+        }
+        else {
+            lv.setVisibility(View.VISIBLE);
+        }
     }
 
     private void drawLocationFootprint() {
@@ -381,9 +340,7 @@ public class LocationActivity extends AppCompatActivity {
                     .setDuration(500)
                     .build());
         }
-
     }
-
 
     @Override
     protected void onStop() {
@@ -394,14 +351,14 @@ public class LocationActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        disableMeasureReception();
+        //disableMeasureReception();
         saveLocations();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        disableMeasureReception();
+        //disableMeasureReception();
         saveLocations();
     }
 

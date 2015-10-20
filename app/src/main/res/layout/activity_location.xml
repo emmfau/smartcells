@@ -133,31 +133,40 @@
 
             </LinearLayout>
 
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
+                <!--
                 <ImageView
                     android:id="@+id/imageView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_track_changes_black_48dp" />
+                -->
 
                 <Button
                     android:id="@+id/btLearnLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onButtonLearnClicked"
-                    android:text="Start learning" />
+                    android:text="LEARN" />
 
+                <!--
                 <Button
                     android:id="@+id/btResetLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onButtonResetClicked"
                     android:text="Reset" />
+                -->
 
                 <Button
                     android:id="@+id/btRRemoveLocation"
@@ -166,20 +175,21 @@
                     android:onClick="onButtonRemoveClicked"
                     android:text="Remove" />
 
+                <Button
+                    android:id="@+id/btDetails"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onButtonDetailsClicked"
+                    android:text="Details" />
+
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/locationMatchResults"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Details"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
 
             <ListView
                 android:id="@+id/lv"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"></ListView>
+                android:layout_height="400dp"
+                android:visibility="invisible"
+                ></ListView>
 
         </LinearLayout>
 

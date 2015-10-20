@@ -52,7 +52,15 @@ public class SchedulingService extends IntentService {
             for (Location l : app.locations) {
                 l.locationMatch = app.cellManager.compareFootprints(app.currentFootprint, l.footprint);
                 Log.i("SchedulingService", "Compare current to " + l.name + " : " + l.locationMatch.currentMatchPercent + "% common");
-                // TODO : check percent, and launch actions if needed :)
+                if (l.locationMatch.currentMatchPercent > 80 && l.locationMatch.currentCommonLocationsPercent > 60) {
+                    // TODO : Realize actions
+                    /*
+                    app.actionManager.setWifi(l.enableWifi);
+                    app.actionManager.setBluetooth(l.enableBluetooth);
+                    app.actionManager.setVolume(l.volumeLevel);
+                    */
+                }
+
             }
 
             // Update UI (if UI is launched)

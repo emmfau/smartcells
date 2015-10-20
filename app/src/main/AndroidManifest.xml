@@ -48,6 +48,7 @@
         <activity
             android:name=".activity.LocationActivity"
             android:label="Location"
+            android:configChanges="orientation|screenSize"
             android:parentActivityName=".activity.DashboardActivity"
             android:windowSoftInputMode="stateHidden">
             <meta-data
