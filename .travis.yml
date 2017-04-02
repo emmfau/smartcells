@@ -19,3 +19,7 @@ android:
     - addon-google_apis-google-19
   licenses:
     - android-sdk-license-.+
+  script:
+    - ./gradlew assembleDebug
+
+
